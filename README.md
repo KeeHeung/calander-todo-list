@@ -15,6 +15,7 @@
 - OS : Mac Os
 - 개발환경 : Intellij IDEA
 - 저장소 : Github
+- 테스트 : Junit5
 
 # 요구사항
 
@@ -37,6 +38,10 @@
 ### 4.삭제 (Delete)
 - 일정을 삭제할 수 있다.
 - Soft-delete 로 처리한다.
+
+### 5.단위테스트(Test)
+- Junit5 프레임워크를 이용하여 단위 테스트 진행
+  - Mockito 프레임워크를 사용하여 Mock데이터 생성
 
 
 # 시스템 디자인 및 설계
@@ -200,6 +205,64 @@ public class RawCsvReader {
     }
 ```
 ![Exception2](https://github.com/KeeHeung/calander-todo-list/blob/main/src/main/resources/image/updateException.png?raw=true)
+
+### 단위 테스트
+```java
+@ExtendWith(MockitoExtension.class)
+class EventCsvReaderTest {
+
+    private final static String YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
+
+    @Mock
+    private RawCsvReader rawCsvReader;
+
+    @InjectMocks
+    private EventCsvReader sut;
+
+    @Test
+    public void readerMeeting() throws IOException {
+        // given
+        String path = "";
+//        EventCsvReader sut = new EventCsvReader(rawCsvReader);
+
+        List<String[]> mockData = new ArrayList<>();
+        mockData.add(new String[8]);
+
+        int mockSize = 5;
+        for (int i = 0; i < mockSize; i++) {
+            mockData.add(meetingMock(i));
+        }
+
+        when(rawCsvReader.readAll(path)).thenReturn(mockData);
+
+        // when
+        List<Meeting> meetings = sut.readMeetings(path);
+
+        // then
+        assertEquals(mockSize, meetings.size());
+        assertEquals("title0", meetings.get(0).getTitle());
+    }
+
+    private String[] meetingMock(int id) {
+      String[] mock = new String[8];
+      mock[0] = String.valueOf(id);
+      mock[1] = "MEETING"+id;
+      mock[2] = "title"+id;
+      mock[3] = "A,B,C"+id;
+      mock[4] = "A1"+id;
+      mock[5] = "test"+id;
+      mock[6] = of(ZonedDateTime.now().plusHours(id));
+      mock[7] = of(ZonedDateTime.now().plusHours(id+1));
+  
+      return  mock;
+    }
+
+    private static String of(ZonedDateTime dataTime) {
+      return dataTime.format(DateTimeFormatter.ofPattern(YYYY_MM_DD_HH_MM_SS));
+    }
+}   
+```
+![Juint5]()
 
 # 출력 결과
 
